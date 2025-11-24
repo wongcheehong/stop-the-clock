@@ -1,132 +1,28 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { api } from '../api';
-
-interface Player {
-  id: number;
-  name: string;
-}
-
-interface LeaderboardEntry {
-  playerId: number;
-  name: string;
-  timeMs: number;
-  delta: number;
-}
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useGame } from '../hooks/useGame';
+import { useLeaderboard } from '../hooks/useLeaderboard';
+import { usePlayerSession } from '../hooks/usePlayerSession';
+import { useGameControls } from '../hooks/useGameControls';
 
 export default function Game() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   
-  const [player, setPlayer] = useState<Player | null>(null);
+  const { player, joinGame } = usePlayerSession(id);
+  const { gameState, timeMs, lastResult, startGame, stopGame, resetGame } = useGame(id, player);
+  const leaderboard = useLeaderboard(id, lastResult);
+  
+  useGameControls(gameState, {
+    start: startGame,
+    stop: stopGame,
+    reset: resetGame
+  }, !!player);
+
   const [nameInput, setNameInput] = useState('');
-  
-  const [gameState, setGameState] = useState<'idle' | 'running' | 'stopped'>('idle');
-  const [timeMs, setTimeMs] = useState(0);
-  const [lastResult, setLastResult] = useState<{ time: number; delta: number } | null>(null);
-  
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  
-  const startTimeRef = useRef<number>(0);
 
-  // Initial load: check session
-  useEffect(() => {
-    if (!id) return;
-    api.checkSession(id)
-      .then(() => {
-        // Restore player from local storage if matches session and session exists
-        const stored = localStorage.getItem(`stop-clock-player-${id}`);
-        if (stored) {
-          setPlayer(JSON.parse(stored));
-        }
-      })
-      .catch(() => {
-        alert('Session not found');
-        navigate('/');
-      });
-  }, [id, navigate]);
-
-  // Leaderboard polling
-  useEffect(() => {
-    if (!id) return;
-    const fetchLeaderboard = () => {
-      api.getLeaderboard(id).then(setLeaderboard).catch(console.error);
-    };
-    fetchLeaderboard();
-    const interval = setInterval(fetchLeaderboard, 2000);
-    return () => clearInterval(interval);
-  }, [id, lastResult]); 
-
-  const joinGame = async () => {
-    if (!nameInput.trim() || !id) return;
-    try {
-      const p = await api.joinSession(id, nameInput);
-      setPlayer(p);
-      localStorage.setItem(`stop-clock-player-${id}`, JSON.stringify(p));
-    } catch {
-      alert('Failed to join');
-    }
+  const handleJoin = () => {
+      joinGame(nameInput);
   };
-
-  const startGame = useCallback(() => {
-    setGameState('running');
-    startTimeRef.current = performance.now();
-  }, []);
-
-  const stopGame = useCallback(async () => {
-    setGameState('stopped');
-    
-    const finalTime = performance.now() - startTimeRef.current;
-    setTimeMs(finalTime);
-    
-    if (player && id) {
-      const res = await api.submitScore(player.id, Math.floor(finalTime));
-      setLastResult({ time: finalTime, delta: res.delta });
-    }
-  }, [player, id]);
-
-  const resetGame = useCallback(() => {
-    setGameState('idle');
-    setTimeMs(0);
-    setLastResult(null);
-  }, []);
-
-  // Timer loop
-  useEffect(() => {
-    let frameId: number;
-    if (gameState === 'running') {
-      const loop = () => {
-        const now = performance.now();
-        setTimeMs(now - startTimeRef.current);
-        frameId = requestAnimationFrame(loop);
-      };
-      frameId = requestAnimationFrame(loop);
-    }
-    return () => {
-      if (frameId) cancelAnimationFrame(frameId);
-    };
-  }, [gameState]);
-
-  // Keyboard controls
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!player) return;
-
-      if (e.code === 'Space') {
-        e.preventDefault();
-        if (gameState === 'idle') {
-          startGame();
-        } else if (gameState === 'running') {
-          stopGame();
-        } else if (gameState === 'stopped') {
-          resetGame();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [player, gameState, startGame, stopGame, resetGame]);
 
   if (!player) {
     return (
@@ -137,7 +33,7 @@ export default function Game() {
           onChange={(e) => setNameInput(e.target.value)} 
           placeholder="Display Name" 
         />
-        <button onClick={joinGame}>Join Game</button>
+        <button onClick={handleJoin}>Join Game</button>
       </div>
     );
   }

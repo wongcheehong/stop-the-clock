@@ -1,34 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { api } from '../api';
+import { useHome } from '../hooks/useHome';
 
 export default function Home() {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-
-  const createGame = useCallback(async () => {
-    setLoading(true);
-    try {
-      const { id } = await api.createSession();
-      navigate(`/game/${id}`);
-    } catch (e) {
-      console.error(e);
-      alert('Failed to create game');
-    } finally {
-      setLoading(false);
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && !loading) {
-        e.preventDefault();
-        createGame();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [loading, createGame]);
+  const { loading, createGame } = useHome();
 
   return (
     <div className="home-container">
