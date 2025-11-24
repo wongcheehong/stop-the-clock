@@ -5,7 +5,6 @@ export function useGameControls(
   actions: {
     start: () => void;
     stop: () => void;
-    reset: () => void;
   },
   enabled: boolean = true
 ) {
@@ -19,9 +18,8 @@ export function useGameControls(
           actions.start();
         } else if (gameState === 'running') {
           actions.stop();
-        } else if (gameState === 'stopped') {
-          actions.reset();
         }
+        // No reset action when stopped - one play per session
       }
     };
 

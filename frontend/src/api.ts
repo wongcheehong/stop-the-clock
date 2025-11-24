@@ -28,5 +28,9 @@ export const api = {
   getLeaderboard: async (sessionId: string) => {
     const res = await fetch(`/api/sessions/${sessionId}/leaderboard`);
     return res.json();
+  },
+  checkPlayerScore: async (playerId: number) => {
+    const res = await fetch(`/api/players/${playerId}/has-score`);
+    return res.json();
   }
 };

@@ -5,9 +5,9 @@ interface GameState {
   gameState: 'idle' | 'running' | 'stopped';
   timeMs: number;
   lastResult: { time: number; delta: number } | null;
+  hasPlayed: boolean;
   startGame: () => void;
   stopGame: () => void;
-  resetGame: () => void;
 }
 
 interface Player {
@@ -19,38 +19,51 @@ export function useGame(sessionId: string | undefined, player: Player | null): G
   const [gameState, setGameState] = useState<'idle' | 'running' | 'stopped'>('idle');
   const [timeMs, setTimeMs] = useState(0);
   const [lastResult, setLastResult] = useState<{ time: number; delta: number } | null>(null);
-  
+  const [hasPlayed, setHasPlayed] = useState(false);
+
   const startTimeRef = useRef<number>(0);
 
+  // Check if player already has a score on mount/player change
+  useEffect(() => {
+    if (player) {
+      api.checkPlayerScore(player.id).then((res) => {
+        if (res.hasScore) {
+          setHasPlayed(true);
+          setGameState('stopped');
+          setLastResult({ time: res.score.timeMs, delta: res.score.delta });
+          setTimeMs(res.score.timeMs);
+        }
+      });
+    }
+  }, [player]);
+
   const startGame = useCallback(() => {
+    if (hasPlayed) return; // Prevent starting if already played
     setGameState('running');
     startTimeRef.current = performance.now();
-  }, []);
+  }, [hasPlayed]);
 
   const stopGame = useCallback(async () => {
     setGameState('stopped');
-    
+
     const finalTime = performance.now() - startTimeRef.current;
     setTimeMs(finalTime);
-    
+
     if (player && sessionId) {
       try {
         const res = await api.submitScore(player.id, Math.floor(finalTime));
-        setLastResult({ time: finalTime, delta: res.delta });
+        if (res.error) {
+          // Already played - server rejected
+          setHasPlayed(true);
+        } else {
+          setLastResult({ time: finalTime, delta: res.delta });
+          setHasPlayed(true);
+        }
       } catch (e) {
         console.error("Failed to submit score", e);
       }
-    } else {
-        // Fallback if no player/session, just show time (though UI handles this guard)
-        setLastResult({ time: finalTime, delta: 0 });
     }
   }, [player, sessionId]);
-
-  const resetGame = useCallback(() => {
-    setGameState('idle');
-    setTimeMs(0);
-    setLastResult(null);
-  }, []);
 
   // Timer loop
   useEffect(() => {
@@ -68,5 +81,5 @@ export function useGame(sessionId: string | undefined, player: Player | null): G
     };
   }, [gameState]);
 
-  return { gameState, timeMs, lastResult, startGame, stopGame, resetGame };
+  return { gameState, timeMs, lastResult, hasPlayed, startGame, stopGame };
 }

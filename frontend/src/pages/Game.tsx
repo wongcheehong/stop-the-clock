@@ -10,14 +10,13 @@ export default function Game() {
   const navigate = useNavigate();
 
   const { player, joinGame } = usePlayerSession(id);
-  const { gameState, timeMs, lastResult, startGame, stopGame, resetGame } = useGame(id, player);
+  const { gameState, timeMs, lastResult, hasPlayed, startGame, stopGame } = useGame(id, player);
   const leaderboard = useLeaderboard(id, lastResult);
-  
+
   useGameControls(gameState, {
     start: startGame,
     stop: stopGame,
-    reset: resetGame
-  }, !!player);
+  }, !!player && !hasPlayed);
 
   const [nameInput, setNameInput] = useState('');
 
@@ -70,7 +69,7 @@ export default function Game() {
                 <p>Delta: {(lastResult.delta / 1000).toFixed(3)}s</p>
               </>
             )}
-            <button className="action-btn retry" onClick={resetGame}>Try Again</button>
+            <p className="played-message">You've already played in this session!</p>
           </div>
         )}
       </div>
