@@ -358,6 +358,10 @@ button {
 
 /* --- Responsive --- */
 @media (max-width: 400px) {
+  .timer-display {
+    font-size: 3.5rem;
+  }
+
   .leaderboard-header,
   .leaderboard-section li {
     grid-template-columns: 24px 1fr 58px 58px;
