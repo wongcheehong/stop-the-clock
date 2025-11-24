@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useGame } from '../hooks/useGame';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { usePlayerSession } from '../hooks/usePlayerSession';
@@ -7,7 +7,6 @@ import { useGameControls } from '../hooks/useGameControls';
 
 export default function Game() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
   const { player, joinGame } = usePlayerSession(id);
   const { gameState, timeMs, lastResult, hasPlayed, startGame, stopGame } = useGame(id, player);
@@ -78,12 +77,15 @@ export default function Game() {
       <div className="leaderboard-section">
         <div className="leaderboard-title-row">
           <h3>Live Rankings</h3>
-          <button
+          <a
             className="view-full-ranking-btn"
-            onClick={() => navigate(`/ranking/${id}`)}
+            href={`/ranking/${id}`}
+            title="View Full Ranking"
           >
-            View Full Ranking
-          </button>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+          </a>
         </div>
         <div className="leaderboard-header">
             <span>#</span>
