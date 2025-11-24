@@ -239,14 +239,40 @@ button {
   padding: 1rem;
 }
 
+.leaderboard-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
+}
+
 .leaderboard-section h3 {
   font-size: 1.2rem;
-  margin-bottom: 1rem;
+  margin: 0;
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 1px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding-bottom: 0.5rem;
+}
+
+.view-full-ranking-btn {
+  background: transparent;
+  border: 1px solid var(--accent-secondary);
+  color: var(--accent-secondary);
+  padding: 0.4rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.view-full-ranking-btn:hover {
+  background: var(--accent-secondary);
+  color: #0f0e17;
+  box-shadow: 0 0 15px rgba(0, 235, 199, 0.3);
 }
 
 .leaderboard-header {
@@ -345,4 +371,613 @@ button {
 @keyframes popIn {
   from { opacity: 0; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1); }
+}
+
+/* ============================================
+   RANKING PAGE STYLES
+   ============================================ */
+
+.ranking-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* --- Header Section --- */
+.ranking-header {
+  text-align: center;
+  padding: 2rem 1rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(
+    circle,
+    rgba(0, 235, 199, 0.15) 0%,
+    rgba(255, 0, 84, 0.1) 50%,
+    transparent 70%
+  );
+  transform: translate(-50%, -50%);
+  filter: blur(40px);
+  pointer-events: none;
+  animation: headerPulse 4s ease-in-out infinite;
+}
+
+@keyframes headerPulse {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+.ranking-title {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: -2px;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+.title-live {
+  display: block;
+  font-size: 1rem;
+  letter-spacing: 8px;
+  color: var(--accent-secondary);
+  text-shadow: 0 0 20px rgba(0, 235, 199, 0.5);
+  margin-bottom: 0.25rem;
+  animation: liveGlow 2s ease-in-out infinite;
+}
+
+@keyframes liveGlow {
+  0%, 100% { text-shadow: 0 0 20px rgba(0, 235, 199, 0.5); }
+  50% { text-shadow: 0 0 40px rgba(0, 235, 199, 0.8), 0 0 60px rgba(0, 235, 199, 0.4); }
+}
+
+.title-rankings {
+  display: block;
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary), var(--accent-tertiary));
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 5s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.ranking-subtitle {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0.5rem 0 0;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* --- Meta Cards Section --- */
+.ranking-meta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.meta-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.meta-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.meta-icon {
+  font-size: 1.25rem;
+}
+
+.meta-icon.pulse {
+  animation: iconPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.7; }
+}
+
+.meta-content {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.meta-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+}
+
+.meta-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+}
+
+/* --- Live Toggle --- */
+.live-toggle-container {
+  display: flex;
+  justify-content: center;
+}
+
+.live-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.75rem 1.25rem;
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.live-toggle:hover {
+  border-color: var(--accent-secondary);
+  box-shadow: 0 0 20px rgba(0, 235, 199, 0.15);
+}
+
+.live-toggle input {
+  display: none;
+}
+
+.toggle-track {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 13px;
+  transition: all 0.3s ease;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.live-toggle input:checked + .toggle-track {
+  background: rgba(0, 235, 199, 0.3);
+}
+
+.live-toggle input:checked + .toggle-track .toggle-thumb {
+  left: 25px;
+  background: var(--accent-secondary);
+  box-shadow: 0 0 10px rgba(0, 235, 199, 0.5);
+}
+
+.toggle-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--accent-secondary);
+  border-radius: 50%;
+  animation: liveDotPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes liveDotPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(0, 235, 199, 0.7);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(0, 235, 199, 0);
+    opacity: 0.8;
+  }
+}
+
+/* --- Ranking List --- */
+.ranking-list {
+  flex: 1;
+}
+
+.ranking-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* --- Individual Ranking Card --- */
+.ranking-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  display: grid;
+  grid-template-columns: 60px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.3s ease;
+  animation: cardSlideIn 0.4s ease backwards;
+}
+
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.ranking-card:hover {
+  transform: translateX(5px);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Rank styling for top 3 */
+.ranking-card.rank-gold {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), var(--card-bg));
+  border-color: rgba(255, 215, 0, 0.3);
+}
+
+.ranking-card.rank-gold:hover {
+  box-shadow: 0 8px 32px rgba(255, 215, 0, 0.15);
+}
+
+.ranking-card.rank-silver {
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.1), var(--card-bg));
+  border-color: rgba(192, 192, 192, 0.25);
+}
+
+.ranking-card.rank-silver:hover {
+  box-shadow: 0 8px 32px rgba(192, 192, 192, 0.1);
+}
+
+.ranking-card.rank-bronze {
+  background: linear-gradient(135deg, rgba(205, 127, 50, 0.1), var(--card-bg));
+  border-color: rgba(205, 127, 50, 0.25);
+}
+
+.ranking-card.rank-bronze:hover {
+  box-shadow: 0 8px 32px rgba(205, 127, 50, 0.1);
+}
+
+/* --- Rank Badge --- */
+.ranking-card-rank {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.rank-number {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-family: var(--font-display);
+  color: var(--text-secondary);
+}
+
+.rank-gold .rank-number {
+  color: #ffd700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.rank-silver .rank-number {
+  color: #c0c0c0;
+  text-shadow: 0 0 15px rgba(192, 192, 192, 0.5);
+}
+
+.rank-bronze .rank-number {
+  color: #cd7f32;
+  text-shadow: 0 0 15px rgba(205, 127, 50, 0.5);
+}
+
+.rank-emoji {
+  font-size: 1.25rem;
+  margin-top: 0.25rem;
+}
+
+/* --- Player Info --- */
+.ranking-card-player {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.player-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #0f0e17;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.player-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Stats Section --- */
+.ranking-card-stats {
+  display: flex;
+  gap: 1.5rem;
+  text-align: right;
+}
+
+.stat-time,
+.stat-delta {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.stat-delta .stat-value {
+  color: var(--accent-tertiary);
+}
+
+/* Delta color coding */
+.delta-excellent .stat-value {
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+}
+
+.delta-good .stat-value {
+  color: var(--accent-secondary);
+}
+
+.delta-medium .stat-value {
+  color: var(--accent-tertiary);
+}
+
+.delta-far .stat-value {
+  color: var(--accent-primary);
+}
+
+/* --- Footer --- */
+.ranking-footer {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.target-reminder {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.target-reminder strong {
+  color: var(--accent-tertiary);
+  font-family: var(--font-display);
+}
+
+/* --- Empty & Loading States --- */
+.ranking-empty,
+.ranking-loading,
+.ranking-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.empty-icon,
+.error-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.ranking-empty h3,
+.ranking-error h2 {
+  margin: 0 0 0.5rem;
+  color: var(--text-primary);
+}
+
+.ranking-empty p,
+.ranking-error p {
+  margin: 0 0 1.5rem;
+  color: var(--text-secondary);
+}
+
+.join-game-btn {
+  background: var(--accent-secondary);
+  color: #0f0e17;
+  padding: 0.875rem 2rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 0 20px rgba(0, 235, 199, 0.3);
+  transition: all 0.3s ease;
+}
+
+.join-game-btn:hover {
+  background: #fff;
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(0, 235, 199, 0.5);
+}
+
+/* Loading spinner */
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--accent-secondary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Back to Game Button --- */
+.back-to-game-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-secondary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  align-self: center;
+}
+
+.back-to-game-btn:hover {
+  border-color: var(--accent-secondary);
+  color: var(--accent-secondary);
+  box-shadow: 0 0 15px rgba(0, 235, 199, 0.2);
+}
+
+/* --- Responsive Styles --- */
+@media (max-width: 600px) {
+  .ranking-container {
+    padding: 1rem 0.75rem;
+  }
+
+  .ranking-title {
+    font-size: 2.25rem;
+  }
+
+  .title-live {
+    font-size: 0.8rem;
+    letter-spacing: 6px;
+  }
+
+  .ranking-meta {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .meta-card.last-update {
+    grid-column: span 2;
+    justify-content: center;
+  }
+
+  .ranking-card {
+    grid-template-columns: 50px 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.5rem 0.75rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .ranking-card-rank {
+    grid-row: span 2;
+  }
+
+  .ranking-card-player {
+    grid-column: 2;
+  }
+
+  .ranking-card-stats {
+    grid-column: 2;
+    justify-content: flex-start;
+  }
+
+  .player-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .player-name {
+    font-size: 1rem;
+  }
+
+  .stat-value {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .ranking-meta {
+    grid-template-columns: 1fr;
+  }
+
+  .meta-card.last-update {
+    grid-column: 1;
+  }
+
+  .live-toggle {
+    padding: 0.6rem 1rem;
+  }
+
+  .toggle-label {
+    font-size: 0.75rem;
+  }
+
+  .ranking-card-stats {
+    gap: 1rem;
+  }
 }
