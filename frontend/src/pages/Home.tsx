@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 
@@ -6,7 +6,7 @@ export default function Home() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const createGame = async () => {
+  const createGame = useCallback(async () => {
     setLoading(true);
     try {
       const { id } = await api.createSession();
@@ -17,7 +17,7 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

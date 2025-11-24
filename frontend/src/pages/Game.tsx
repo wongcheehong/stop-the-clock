@@ -1,36 +1,49 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../api';
+
+interface Player {
+  id: number;
+  name: string;
+}
+
+interface LeaderboardEntry {
+  playerId: number;
+  name: string;
+  timeMs: number;
+  delta: number;
+}
 
 export default function Game() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   
-  const [player, setPlayer] = useState<{ id: number; name: string } | null>(null);
+  const [player, setPlayer] = useState<Player | null>(null);
   const [nameInput, setNameInput] = useState('');
   
   const [gameState, setGameState] = useState<'idle' | 'running' | 'stopped'>('idle');
   const [timeMs, setTimeMs] = useState(0);
   const [lastResult, setLastResult] = useState<{ time: number; delta: number } | null>(null);
   
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   
   const startTimeRef = useRef<number>(0);
-  const timerRef = useRef<number>(0);
 
   // Initial load: check session
   useEffect(() => {
     if (!id) return;
-    api.checkSession(id).catch(() => {
-      alert('Session not found');
-      navigate('/');
-    });
-
-    // Restore player from local storage if matches session
-    const stored = localStorage.getItem(`stop-clock-player-${id}`);
-    if (stored) {
-      setPlayer(JSON.parse(stored));
-    }
+    api.checkSession(id)
+      .then(() => {
+        // Restore player from local storage if matches session and session exists
+        const stored = localStorage.getItem(`stop-clock-player-${id}`);
+        if (stored) {
+          setPlayer(JSON.parse(stored));
+        }
+      })
+      .catch(() => {
+        alert('Session not found');
+        navigate('/');
+      });
   }, [id, navigate]);
 
   // Leaderboard polling
@@ -42,7 +55,7 @@ export default function Game() {
     fetchLeaderboard();
     const interval = setInterval(fetchLeaderboard, 2000);
     return () => clearInterval(interval);
-  }, [id, lastResult]); // Refresh immediately after score update too
+  }, [id, lastResult]); 
 
   const joinGame = async () => {
     if (!nameInput.trim() || !id) return;
@@ -50,25 +63,17 @@ export default function Game() {
       const p = await api.joinSession(id, nameInput);
       setPlayer(p);
       localStorage.setItem(`stop-clock-player-${id}`, JSON.stringify(p));
-    } catch (e) {
+    } catch {
       alert('Failed to join');
     }
   };
 
-  const startGame = () => {
+  const startGame = useCallback(() => {
     setGameState('running');
     startTimeRef.current = performance.now();
-    timerRef.current = requestAnimationFrame(tick);
-  };
+  }, []);
 
-  const tick = () => {
-    const now = performance.now();
-    setTimeMs(now - startTimeRef.current);
-    timerRef.current = requestAnimationFrame(tick);
-  };
-
-  const stopGame = async () => {
-    cancelAnimationFrame(timerRef.current);
+  const stopGame = useCallback(async () => {
     setGameState('stopped');
     
     const finalTime = performance.now() - startTimeRef.current;
@@ -78,14 +83,31 @@ export default function Game() {
       const res = await api.submitScore(player.id, Math.floor(finalTime));
       setLastResult({ time: finalTime, delta: res.delta });
     }
-  };
+  }, [player, id]);
 
-  const resetGame = () => {
+  const resetGame = useCallback(() => {
     setGameState('idle');
     setTimeMs(0);
     setLastResult(null);
-  };
+  }, []);
 
+  // Timer loop
+  useEffect(() => {
+    let frameId: number;
+    if (gameState === 'running') {
+      const loop = () => {
+        const now = performance.now();
+        setTimeMs(now - startTimeRef.current);
+        frameId = requestAnimationFrame(loop);
+      };
+      frameId = requestAnimationFrame(loop);
+    }
+    return () => {
+      if (frameId) cancelAnimationFrame(frameId);
+    };
+  }, [gameState]);
+
+  // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!player) return;
@@ -145,8 +167,12 @@ export default function Game() {
         )}
         {gameState === 'stopped' && (
           <div className="result">
-            <p>Stopped at: {(lastResult?.time! / 1000).toFixed(3)}s</p>
-            <p>Delta: {(lastResult?.delta! / 1000).toFixed(3)}s</p>
+            {lastResult && (
+              <>
+                <p>Stopped at: {(lastResult.time / 1000).toFixed(3)}s</p>
+                <p>Delta: {(lastResult.delta / 1000).toFixed(3)}s</p>
+              </>
+            )}
             <button className="action-btn retry" onClick={resetGame}>Try Again</button>
           </div>
         )}
