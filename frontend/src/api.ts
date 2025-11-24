@@ -1,0 +1,32 @@
+export const api = {
+  createSession: async () => {
+    const res = await fetch('/api/sessions', { method: 'POST' });
+    return res.json();
+  },
+  checkSession: async (id: string) => {
+    const res = await fetch(`/api/sessions/${id}`);
+    if (!res.ok) throw new Error('Session not found');
+    return res.json();
+  },
+  joinSession: async (id: string, name: string) => {
+    const res = await fetch(`/api/sessions/${id}/join`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) throw new Error('Failed to join');
+    return res.json();
+  },
+  submitScore: async (playerId: number, timeMs: number) => {
+    const res = await fetch('/api/scores', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ playerId, timeMs }),
+    });
+    return res.json();
+  },
+  getLeaderboard: async (sessionId: string) => {
+    const res = await fetch(`/api/sessions/${sessionId}/leaderboard`);
+    return res.json();
+  }
+};
