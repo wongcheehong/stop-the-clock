@@ -28,10 +28,11 @@ export default function Game() {
     return (
       <div className="game-container">
         <h2>Enter your Name</h2>
-        <input 
-          value={nameInput} 
-          onChange={(e) => setNameInput(e.target.value)} 
-          placeholder="Display Name" 
+        <input
+          value={nameInput}
+          onChange={(e) => setNameInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+          placeholder="Display Name"
         />
         <button onClick={handleJoin}>Join Game</button>
       </div>
