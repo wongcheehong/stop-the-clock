@@ -86,6 +86,26 @@ export default function Game() {
     setLastResult(null);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!player) return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (gameState === 'idle') {
+          startGame();
+        } else if (gameState === 'running') {
+          stopGame();
+        } else if (gameState === 'stopped') {
+          resetGame();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [player, gameState, startGame, stopGame, resetGame]);
+
   if (!player) {
     return (
       <div className="game-container">
