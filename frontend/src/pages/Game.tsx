@@ -112,7 +112,7 @@ export default function Game() {
       </div>
 
       <div className="timer-section">
-        <div className="timer-display">
+        <div className={`timer-display ${gameState}`}>
           {(timeMs / 1000).toFixed(2)}s
         </div>
         <div className="target-label">Target: 10.00s</div>
@@ -134,12 +134,19 @@ export default function Game() {
 
       <div className="leaderboard-section">
         <h3>Live Rankings</h3>
+        <div className="leaderboard-header">
+            <span>#</span>
+            <span>Name</span>
+            <span className="u-text-right">Time</span>
+            <span className="u-text-right">Delta</span>
+        </div>
         <ul>
           {leaderboard.map((entry, idx) => (
             <li key={entry.playerId} className={entry.playerId === player.id ? 'me' : ''}>
               <span className="rank">#{idx + 1}</span>
               <span className="name">{entry.name}</span>
-              <span className="score">{(entry.delta / 1000).toFixed(3)}s</span>
+              <span className="time-val">{(entry.timeMs / 1000).toFixed(3)}s</span>
+              <span className="score">+{ (entry.delta / 1000).toFixed(3)}s</span>
             </li>
           ))}
         </ul>

@@ -21,10 +21,10 @@ export default function Home() {
 
   return (
     <div className="home-container">
-      <h1>Stop the Clock</h1>
-      <p>Stop the timer exactly at 10.00 seconds!</p>
+      <h1>STOP THE CLOCK</h1>
+      <p>Can you hit <span style={{ color: 'var(--accent-tertiary)', fontWeight: 'bold' }}>10.00s</span> exactly?</p>
       <button onClick={createGame} disabled={loading}>
-        {loading ? 'Creating...' : 'Create New Game'}
+        {loading ? 'Initializing...' : 'Start New Game'}
       </button>
     </div>
   );
