@@ -129,6 +129,65 @@ npm run build
 npm run preview
 ```
 
+## 🐳 Docker Deployment
+
+Deploy to any Linux server with Docker in just 2 commands!
+
+### Prerequisites
+
+Install Docker on your server:
+```bash
+curl -fsSL https://get.docker.com | sh
+sudo usermod -aG docker $USER
+# Log out and back in for group changes to take effect
+```
+
+### Deploy
+
+```bash
+# Clone and start
+git clone https://github.com/yourusername/stop-the-clock.git
+cd stop-the-clock
+docker compose up -d --build
+```
+
+The app will be available at `http://your-server-ip`
+
+### Custom Port
+
+If port 80 is in use, specify a different port:
+```bash
+PORT=8080 docker compose up -d --build
+```
+
+### Update Deployment
+
+When you have new changes:
+```bash
+git pull
+docker compose up -d --build
+```
+
+### Useful Commands
+
+```bash
+# View logs
+docker compose logs -f
+
+# Stop the app
+docker compose down
+
+# Restart
+docker compose restart
+
+# Check status
+docker compose ps
+```
+
+### Data Persistence
+
+The SQLite database is stored in `./data/local.db` and persists across container restarts.
+
 ## 📄 License
 
 MIT License - feel free to use this project for learning or fun!
