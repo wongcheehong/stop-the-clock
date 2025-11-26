@@ -118,6 +118,93 @@ button {
   box-shadow: none;
 }
 
+/* --- Hard Mode Toggle --- */
+.hard-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  padding: 0.75rem 1.25rem;
+  background: var(--card-bg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.hard-mode-toggle:hover {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 20px rgba(255, 0, 84, 0.15);
+}
+
+.hard-mode-toggle input[type="checkbox"] {
+  display: none;
+}
+
+.hard-mode-toggle .toggle-slider {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 13px;
+  transition: all 0.3s ease;
+}
+
+.hard-mode-toggle .toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  background: var(--text-secondary);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hard-mode-toggle input[type="checkbox"]:checked + .toggle-slider {
+  background: rgba(255, 0, 84, 0.3);
+}
+
+.hard-mode-toggle input[type="checkbox"]:checked + .toggle-slider::after {
+  left: 25px;
+  background: var(--accent-primary);
+  box-shadow: 0 0 10px rgba(255, 0, 84, 0.5);
+}
+
+.hard-mode-toggle .toggle-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+}
+
+.hard-mode-hint {
+  font-size: 0.85rem;
+  color: var(--accent-primary);
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 0, 84, 0.1);
+  border: 1px solid rgba(255, 0, 84, 0.3);
+  border-radius: var(--radius-md);
+  animation: popIn 0.3s ease;
+}
+
+/* --- Hard Mode Badge --- */
+.hard-mode-badge {
+  background: rgba(255, 0, 84, 0.2);
+  border: 1px solid var(--accent-primary);
+  color: var(--accent-primary);
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  animation: pulse-red 2s infinite;
+}
+
 /* Share Button */
 .share-btn {
   background: transparent;

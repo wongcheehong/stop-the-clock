@@ -3,6 +3,7 @@ import { sql } from 'drizzle-orm';
 
 export const sessions = sqliteTable('sessions', {
   id: text('id').primaryKey(),
+  hardMode: integer('hard_mode', { mode: 'boolean' }).default(false).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 });
 

@@ -10,13 +10,15 @@ export interface Player {
 export function usePlayerSession(sessionId: string | undefined) {
   const navigate = useNavigate();
   const [player, setPlayer] = useState<Player | null>(null);
+  const [hardMode, setHardMode] = useState(false);
 
   // Initial load: check session and restore player
   useEffect(() => {
     if (!sessionId) return;
 
     api.checkSession(sessionId)
-      .then(() => {
+      .then((session) => {
+        setHardMode(session.hardMode === true || session.hardMode === 1);
         const stored = localStorage.getItem(`stop-clock-player-${sessionId}`);
         if (stored) {
           setPlayer(JSON.parse(stored));
@@ -40,5 +42,5 @@ export function usePlayerSession(sessionId: string | undefined) {
     }
   }, [sessionId]);
 
-  return { player, joinGame };
+  return { player, joinGame, hardMode };
 }

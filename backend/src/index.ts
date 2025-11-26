@@ -16,8 +16,10 @@ app.get('/', (c) => {
 // Create a new session
 app.post('/api/sessions', async (c) => {
   const id = crypto.randomUUID();
-  await db.insert(sessions).values({ id });
-  return c.json({ id });
+  const body = await c.req.json().catch(() => ({}));
+  const hardMode = body.hardMode === true;
+  await db.insert(sessions).values({ id, hardMode });
+  return c.json({ id, hardMode });
 });
 
 // Check if session exists

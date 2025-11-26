@@ -8,7 +8,7 @@ import { useGameControls } from '../hooks/useGameControls';
 export default function Game() {
   const { id } = useParams<{ id: string }>();
 
-  const { player, joinGame } = usePlayerSession(id);
+  const { player, joinGame, hardMode } = usePlayerSession(id);
   const { gameState, timeMs, lastResult, hasPlayed, startGame, stopGame } = useGame(id, player);
   const leaderboard = useLeaderboard(id, lastResult);
 
@@ -50,8 +50,9 @@ export default function Game() {
       </div>
 
       <div className="timer-section">
+        {hardMode && <div className="hard-mode-badge">Hard Mode</div>}
         <div className={`timer-display ${gameState}`}>
-          {(timeMs / 1000).toFixed(2)}s
+          {hardMode && gameState === 'running' ? '??.??s' : `${(timeMs / 1000).toFixed(2)}s`}
         </div>
         <div className="target-label">Target: 10.00s</div>
 

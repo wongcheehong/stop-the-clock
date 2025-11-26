@@ -5,11 +5,12 @@ import { api } from '../api';
 export function useHome() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [hardMode, setHardMode] = useState(false);
 
   const createGame = useCallback(async () => {
     setLoading(true);
     try {
-      const { id } = await api.createSession();
+      const { id } = await api.createSession(hardMode);
       navigate(`/game/${id}`);
     } catch (e) {
       console.error(e);
@@ -17,7 +18,7 @@ export function useHome() {
     } finally {
       setLoading(false);
     }
-  }, [navigate]);
+  }, [navigate, hardMode]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -30,5 +31,5 @@ export function useHome() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [loading, createGame]);
 
-  return { loading, createGame };
+  return { loading, createGame, hardMode, setHardMode };
 }
