@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useGame } from '../hooks/useGame';
 import { useLeaderboard } from '../hooks/useLeaderboard';
@@ -11,6 +11,17 @@ export default function Game() {
   const { player, joinGame, hardMode } = usePlayerSession(id);
   const { gameState, timeMs, lastResult, hasPlayed, startGame, stopGame } = useGame(id, player);
   const leaderboard = useLeaderboard(id, lastResult);
+
+  const timerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (hardMode && gameState === 'running' && timerRef.current) {
+      // To prevent users from guessing the timing based on animation frequency,
+      // the pulse duration is randomized between 300ms and 1000ms.
+      const randomDuration = Math.random() * (1000 - 300) + 300; // 300ms to 1000ms
+      timerRef.current.style.setProperty('--pulse-duration', `${randomDuration}ms`);
+    }
+  }, [hardMode, gameState]);
 
   useGameControls(gameState, {
     start: startGame,
@@ -51,7 +62,10 @@ export default function Game() {
 
       <div className="timer-section">
         {hardMode && <div className="hard-mode-badge">Hard Mode</div>}
-        <div className={`timer-display ${gameState}`}>
+        <div
+          ref={timerRef}
+          className={`timer-display ${gameState} ${hardMode && gameState === 'running' ? 'hard-mode-pulse' : ''}`}
+        >
           {hardMode && gameState === 'running' ? '??.??s' : `${(timeMs / 1000).toFixed(2)}s`}
         </div>
         <div className="target-label">Target: 10.00s</div>
