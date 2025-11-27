@@ -9,7 +9,8 @@ export default function Game() {
   const { id } = useParams<{ id: string }>();
 
   const { player, joinGame, hardMode } = usePlayerSession(id);
-  const { gameState, timeMs, lastResult, hasPlayed, startGame, stopGame } = useGame(id, player);
+  const { gameState, timeMs, lastResult, hasPlayed, startGame, stopGame } =
+    useGame(id, player);
   const leaderboard = useLeaderboard(id, lastResult);
 
   const timerRef = useRef<HTMLDivElement>(null);
@@ -19,19 +20,26 @@ export default function Game() {
       // To prevent users from guessing the timing based on animation frequency,
       // the pulse duration is randomized between 300ms and 1000ms.
       const randomDuration = Math.random() * (1000 - 300) + 300; // 300ms to 1000ms
-      timerRef.current.style.setProperty('--pulse-duration', `${randomDuration}ms`);
+      timerRef.current.style.setProperty(
+        '--pulse-duration',
+        `${randomDuration}ms`,
+      );
     }
   }, [hardMode, gameState]);
 
-  useGameControls(gameState, {
-    start: startGame,
-    stop: stopGame,
-  }, !!player && !hasPlayed);
+  useGameControls(
+    gameState,
+    {
+      start: startGame,
+      stop: stopGame,
+    },
+    !!player && !hasPlayed,
+  );
 
   const [nameInput, setNameInput] = useState('');
 
   const handleJoin = () => {
-      joinGame(nameInput);
+    joinGame(nameInput);
   };
 
   if (!player) {
@@ -54,27 +62,57 @@ export default function Game() {
       <div className="header">
         <h2>Room: {id?.slice(0, 8)}...</h2>
         <p>Player: {player.name}</p>
-        <button className="share-btn" onClick={() => {
-          navigator.clipboard.writeText(window.location.href);
-          alert('Link copied!');
-        }}>Share Link</button>
+        <button
+          className="share-btn"
+          onClick={async () => {
+            const url = window.location.href;
+            try {
+              if (navigator.clipboard?.writeText) {
+                await navigator.clipboard.writeText(url);
+              } else {
+                // Fallback for non-secure contexts (HTTP)
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-9999px';
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+              }
+              alert('Link copied!');
+            } catch {
+              alert('Failed to copy link. Please copy manually: ' + url);
+            }
+          }}
+        >
+          Share Link
+        </button>
       </div>
 
       <div className="timer-section">
         {hardMode && <div className="hard-mode-badge">Hard Mode</div>}
         <div
           ref={timerRef}
-          className={`timer-display ${gameState} ${hardMode && gameState === 'running' ? 'hard-mode-pulse' : ''}`}
+          className={`timer-display ${gameState} ${
+            hardMode && gameState === 'running' ? 'hard-mode-pulse' : ''
+          }`}
         >
-          {hardMode && gameState === 'running' ? '??.??s' : `${(timeMs / 1000).toFixed(2)}s`}
+          {hardMode && gameState === 'running'
+            ? '??.??s'
+            : `${(timeMs / 1000).toFixed(2)}s`}
         </div>
         <div className="target-label">Target: 10.00s</div>
 
         {gameState === 'idle' && (
-          <button className="action-btn start" onClick={startGame}>Start</button>
+          <button className="action-btn start" onClick={startGame}>
+            Start
+          </button>
         )}
         {gameState === 'running' && (
-          <button className="action-btn stop" onClick={stopGame}>STOP</button>
+          <button className="action-btn stop" onClick={stopGame}>
+            STOP
+          </button>
         )}
         {gameState === 'stopped' && (
           <div className="result">
@@ -84,7 +122,9 @@ export default function Game() {
                 <p>Delta: {(lastResult.delta / 1000).toFixed(3)}s</p>
               </>
             )}
-            <p className="played-message">You've already played in this session!</p>
+            <p className="played-message">
+              You've already played in this session!
+            </p>
           </div>
         )}
       </div>
@@ -97,24 +137,38 @@ export default function Game() {
             href={`/ranking/${id}`}
             title="View Full Ranking"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
             </svg>
           </a>
         </div>
         <div className="leaderboard-header">
-            <span>#</span>
-            <span>Name</span>
-            <span className="u-text-right">Time</span>
-            <span className="u-text-right">Delta</span>
+          <span>#</span>
+          <span>Name</span>
+          <span className="u-text-right">Time</span>
+          <span className="u-text-right">Delta</span>
         </div>
         <ul>
           {leaderboard.map((entry, idx) => (
-            <li key={entry.playerId} className={entry.playerId === player.id ? 'me' : ''}>
+            <li
+              key={entry.playerId}
+              className={entry.playerId === player.id ? 'me' : ''}
+            >
               <span className="rank">#{idx + 1}</span>
               <span className="name">{entry.name}</span>
-              <span className="time-val">{(entry.timeMs / 1000).toFixed(3)}s</span>
-              <span className="score">+{ (entry.delta / 1000).toFixed(3)}s</span>
+              <span className="time-val">
+                {(entry.timeMs / 1000).toFixed(3)}s
+              </span>
+              <span className="score">+{(entry.delta / 1000).toFixed(3)}s</span>
             </li>
           ))}
         </ul>
