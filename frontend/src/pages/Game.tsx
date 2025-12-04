@@ -9,7 +9,7 @@ export default function Game() {
   const { id } = useParams<{ id: string }>();
 
   const { player, joinGame, hardMode } = usePlayerSession(id);
-  const { gameState, timeMs, lastResult, hasPlayed, startGame, stopGame } =
+  const { gameState, timeMs, lastResult, hasPlayed, error, startGame, stopGame } =
     useGame(id, player);
   const leaderboard = useLeaderboard(id, lastResult);
 
@@ -105,9 +105,12 @@ export default function Game() {
         <div className="target-label">Target: 10.00s</div>
 
         {gameState === 'idle' && (
-          <button className="action-btn start" onClick={startGame}>
-            Start
-          </button>
+          <>
+            {error && <p className="error-message">{error}</p>}
+            <button className="action-btn start" onClick={startGame}>
+              Start
+            </button>
+          </>
         )}
         {gameState === 'running' && (
           <button className="action-btn stop" onClick={stopGame}>
@@ -116,6 +119,7 @@ export default function Game() {
         )}
         {gameState === 'stopped' && (
           <div className="result">
+            {error && <p className="error-message">{error}</p>}
             {lastResult && (
               <>
                 <p>Stopped at: {(lastResult.time / 1000).toFixed(3)}s</p>
