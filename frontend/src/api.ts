@@ -7,6 +7,14 @@ export const api = {
     });
     return res.json();
   },
+  startGame: async (playerId: number) => {
+    const res = await fetch('/api/games/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ playerId }),
+    });
+    return res.json();
+  },
   checkSession: async (id: string) => {
     const res = await fetch(`/api/sessions/${id}`);
     if (!res.ok) throw new Error('Session not found');
@@ -21,11 +29,11 @@ export const api = {
     if (!res.ok) throw new Error('Failed to join');
     return res.json();
   },
-  submitScore: async (playerId: number, timeMs: number) => {
+  submitScore: async (playerId: number, timeMs: number, token: string) => {
     const res = await fetch('/api/scores', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ playerId, timeMs }),
+      body: JSON.stringify({ playerId, timeMs, token }),
     });
     return res.json();
   },
