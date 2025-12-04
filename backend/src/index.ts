@@ -2,8 +2,8 @@ import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { db } from './db/index.js';
-import { sessions, players, scores } from './db/schema.js';
-import { eq, asc } from 'drizzle-orm';
+import { sessions, players, scores, gameStarts } from './db/schema.js';
+import { eq, asc, and, isNull } from 'drizzle-orm';
 
 const app = new Hono();
 
@@ -65,13 +65,107 @@ app.post('/api/sessions/:id/join', async (c) => {
   return c.json(result);
 });
 
+// Start a game (issues a token for anti-cheat)
+app.post('/api/games/start', async (c) => {
+  const body = await c.req.json();
+  const { playerId } = body;
+
+  if (playerId === undefined) {
+    return c.json({ error: 'Missing playerId' }, 400);
+  }
+
+  // Check if player exists
+  const player = await db
+    .select()
+    .from(players)
+    .where(eq(players.id, playerId))
+    .get();
+
+  if (!player) {
+    return c.json({ error: 'Player not found' }, 404);
+  }
+
+  // Check if player already has a score
+  const existingScore = await db
+    .select()
+    .from(scores)
+    .where(eq(scores.playerId, playerId))
+    .get();
+
+  if (existingScore) {
+    return c.json({ error: 'You have already played in this session' }, 409);
+  }
+
+  // Check if player already has an unused game start token
+  const existingStart = await db
+    .select()
+    .from(gameStarts)
+    .where(and(eq(gameStarts.playerId, playerId), isNull(gameStarts.usedAt)))
+    .get();
+
+  if (existingStart) {
+    // Return existing token (player clicked start again without submitting)
+    return c.json({
+      token: existingStart.token,
+      startedAt: existingStart.startedAt,
+    });
+  }
+
+  // Generate new token and record start time
+  const token = crypto.randomUUID();
+  const startedAt = Date.now();
+
+  await db.insert(gameStarts).values({
+    playerId,
+    token,
+    startedAt,
+  });
+
+  return c.json({ token, startedAt });
+});
+
 // Submit a score
 app.post('/api/scores', async (c) => {
   const body = await c.req.json();
-  const { playerId, timeMs } = body;
+  const { playerId, timeMs, token } = body;
 
-  if (playerId === undefined || timeMs === undefined) {
-    return c.json({ error: 'Missing playerId or timeMs' }, 400);
+  if (playerId === undefined || timeMs === undefined || token === undefined) {
+    return c.json({ error: 'Missing playerId, timeMs, or token' }, 400);
+  }
+
+  // Validate token exists, matches playerId, and hasn't been used
+  const gameStart = await db
+    .select()
+    .from(gameStarts)
+    .where(
+      and(
+        eq(gameStarts.token, token),
+        eq(gameStarts.playerId, playerId),
+        isNull(gameStarts.usedAt),
+      ),
+    )
+    .get();
+
+  if (!gameStart) {
+    return c.json({ error: 'Invalid or expired game token' }, 403);
+  }
+
+  // Server-side timing validation
+  const now = Date.now();
+  const serverElapsed = now - gameStart.startedAt;
+  const timeDiff = Math.abs(serverElapsed - timeMs);
+
+  // Allow 1 second tolerance for network latency
+  if (timeDiff > 1000) {
+    return c.json(
+      { error: 'Why do you cheat? Game so easy cannot beat is it? Haiya' },
+      403,
+    );
+  }
+
+  // Validate timeMs is within reasonable bounds (0 to 2 minutes)
+  if (timeMs < 0 || timeMs > 120000) {
+    return c.json({ error: 'Invalid time value' }, 400);
   }
 
   // Check if player already has a score (one play per session)
@@ -87,6 +181,12 @@ app.post('/api/scores', async (c) => {
 
   // Calculate delta (absolute difference from 10000ms)
   const delta = Math.abs(timeMs - 10000);
+
+  // Mark token as used
+  await db
+    .update(gameStarts)
+    .set({ usedAt: now })
+    .where(eq(gameStarts.id, gameStart.id));
 
   await db.insert(scores).values({
     playerId,

@@ -21,3 +21,11 @@ export const scores = sqliteTable('scores', {
   delta: integer('delta').notNull(), // absolute difference from 10000
   createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(unixepoch())`),
 });
+
+export const gameStarts = sqliteTable('game_starts', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  playerId: integer('player_id').references(() => players.id).notNull(),
+  token: text('token').notNull().unique(),
+  startedAt: integer('started_at').notNull(), // Unix timestamp in milliseconds
+  usedAt: integer('used_at'), // null until score submitted, then Unix timestamp in ms
+});
