@@ -194,7 +194,7 @@ MIT License - feel free to use this project for learning or fun!
 
 ## Development status
 
-This repository is also used to test an agent workflow.
+Note: This repository is also used to test an agent workflow.
 
 ---
 
