@@ -192,7 +192,7 @@ The SQLite database is stored in `./data/local.db` and persists across container
 
 MIT License - feel free to use this project for learning or fun!
 
-## Development Status
+## Development status
 
 This repository is also used to test an agent workflow.
 
